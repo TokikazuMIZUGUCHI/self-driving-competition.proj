@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>&#x81ea;&#x52d5;&#x904b;&#x8ee2;&#x306b;&#x3088;&#x308b;&#x7af6;&#x4e89;</title>
+        <style>
+/* From extension vscode.github */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+.vscode-dark img[src$=\#gh-light-mode-only],
+.vscode-light img[src$=\#gh-dark-mode-only] {
+	display: none;
+}
+
+/* From extension ms-toolsai.jupyter */
+/* These classnames are inherited from bootstrap, but are present in most notebook renderers */
+
+.alert {
+    width: auto;
+    padding: 1em;
+    margin-top: 1em;
+    margin-bottom: 1em;
+}
+.alert > *:last-child {
+    margin-bottom: 0;
+}
+#preview > .alert:last-child {
+    /* Prevent this being set to zero by the default notebook stylesheet */
+    padding-bottom: 1em;
+}
+
+.alert-success {
+    /* Note there is no suitable color available, so we just copy "info" */
+    background-color: var(--theme-info-background);
+    color: var(--theme-info-foreground);
+}
+.alert-info {
+    background-color: var(--theme-info-background);
+    color: var(--theme-info-foreground);
+}
+.alert-warning {
+    background-color: var(--theme-warning-background);
+    color: var(--theme-warning-foreground);
+}
+.alert-danger {
+    background-color: var(--theme-error-background);
+    color: var(--theme-error-foreground);
+}
+
+</style>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex/dist/katex.min.css">
+<link href="https://cdn.jsdelivr.net/npm/katex-copytex@latest/dist/katex-copytex.min.css" rel="stylesheet" type="text/css">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/markdown.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
+<style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe WPC', 'Segoe UI', system-ui, 'Ubuntu', 'Droid Sans', sans-serif;
+                font-size: 14px;
+                line-height: 1.6;
+            }
+        </style>
+        <style>
+.task-list-item {
+    list-style-type: none;
+}
+
+.task-list-item-checkbox {
+    margin-left: -20px;
+    vertical-align: middle;
+    pointer-events: none;
+}
+</style>
+        
+    </head>
+    <body class="vscode-body vscode-light">
+        <h1 id="自動運転による競争">自動運転による競争</h1>
+<h2 id="目次">目次</h2>
+<ul>
+<li><a href="#%E6%A6%82%E8%A6%81">概要</a></li>
+<li><a href="#%E3%83%80%E3%82%A6%E3%83%B3%E3%83%AD%E3%83%BC%E3%83%89">ダウンロード</a></li>
+<li><a href="#%E5%9F%BA%E6%9C%AC%E3%83%AB%E3%83%BC%E3%83%AB">基本ルール</a></li>
+<li><a href="#unity-editor%E4%B8%8A%E3%81%A7%E3%81%AE%E6%93%8D%E4%BD%9C%E8%AA%AC%E6%98%8E">Unity Editor上での操作説明</a></li>
+<li><a href="#%E3%83%81%E3%83%A5%E3%83%BC%E3%83%88%E3%83%AA%E3%82%A2%E3%83%ABai%E3%81%AE%E5%AD%A6%E7%BF%92%E3%81%8B%E3%82%89%E5%AF%BE%E6%88%A6%E3%81%BE%E3%81%A7%E3%81%AE%E6%B5%81%E3%82%8C">チュートリアル：AIの学習から対戦までの流れ</a></li>
+<li><a href="#%E5%AF%BE%E6%88%A6%E7%92%B0%E5%A2%83%E3%81%A8%E5%90%8C%E3%81%98%E3%82%BB%E3%83%B3%E3%82%B5%E3%82%92%E4%BD%BF%E3%81%A3%E3%81%A6%E5%AD%A6%E7%BF%92%E3%81%95%E3%81%9B%E3%82%8B%E6%96%B9%E6%B3%95">対戦環境と同じセンサを使って学習させる方法</a></li>
+<li><a href="#%E4%BB%8A%E5%9B%9E%E3%81%AEai%E9%96%8B%E7%99%BA%E3%81%AE%E5%9F%BA%E6%9C%AC%E7%9A%84%E3%81%AA%E6%B5%81%E3%82%8C">今回のAI開発の基本的な流れ</a></li>
+<li><a href="#%E3%82%B3%E3%83%BC%E3%83%89%E8%A7%A3%E8%AA%AC">コード解説</a>
+<ul>
+<li><a href="#%E3%82%B9%E3%82%AF%E3%83%AA%E3%83%97%E3%83%88%E3%81%AE%E7%B7%A8%E9%9B%86%E3%81%AB%E3%81%A4%E3%81%84%E3%81%A6">スクリプトの編集について</a></li>
+</ul>
+</li>
+<li><a href="#%E5%85%A5%E5%8A%9B%E5%A4%89%E6%95%B0%E3%81%AE%E4%BB%95%E6%A7%98">入力変数の仕様</a></li>
+<li><a href="#%E5%87%BA%E5%8A%9B%E5%A4%89%E6%95%B0%E3%81%AE%E4%BB%95%E6%A7%98">出力変数の仕様</a></li>
+<li><a href="#%E5%AF%BE%E6%88%A6%E4%BC%9A%E3%81%A7%E6%8F%90%E5%87%BA%E3%81%99%E3%82%8B%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB">対戦会で提出するファイル</a></li>
+<li><a href="#%E6%9C%80%E7%B5%82%E5%9B%9E%E3%81%AE%E5%AF%BE%E6%88%A6%E4%BC%9A%E3%81%AB%E3%81%A4%E3%81%84%E3%81%A6">最終回の対戦会について</a></li>
+<li><a href="#challenge%E7%92%B0%E5%A2%83%E3%81%AB%E3%81%A4%E3%81%84%E3%81%A6">Challenge環境について</a></li>
+<li><a href="#python%E9%80%A3%E6%90%BA%E3%81%AB%E3%81%A4%E3%81%84%E3%81%A6">Python連携について</a></li>
+<li><a href="#%E5%AF%BE%E6%88%A6%E3%81%A7python%E9%80%A3%E6%90%BA%E3%82%92%E7%94%A8%E3%81%84%E3%82%8B%E6%96%B9%E6%B3%95">対戦でPython連携を用いる方法</a></li>
+</ul>
+<h2 id="概要">概要</h2>
+<p>今回作ってもらうものは、入力として情報(センサ情報、自車の速度etc..)を受け取り、それを処理して車の操作を返すようなAIです。 <br>
+入力情報をうまく処理して、適切な走行を実現するためにはどうすれば良いかを工夫してもらいます。 <br>
+単純なものではルールベースに処理を行うようなものから、複雑なものではニューラルネットを使って処理を行うようなものまで、さまざまなやり方が考えられます。 <br>
+サンプルコードとしてQ学習を用いたものとニューロ進化を用いたものがあるので参考にしてみてください。このQ学習やニューロ進化のコードをいじるという形でもいいですし、全く新しいものを作っても構いません。後述するルールを守る範囲内でいろいろ試してみてください。</p>
+<h2 id="ダウンロード">ダウンロード</h2>
+<p><a href="https://drive.google.com/drive/folders/1AFM1EUOxZcP6_mvdLRIu3a6Hy6E-0rbL?usp=sharing">Google Driveのリンク</a>からダウンロードし, 適当なフォルダで展開してください. その後, Unity HubのOpenから展開した.projフォルダを開いてください.</p>
+<p>Google DriveにはUnityのライブラリは上げていませんが, Unity Hubで開く際に自動的に生成されます.</p>
+<p>macOS, Unity 2021.3.1f1以外で開く際には警告が出ますが, 警告に従ってバージョンの変更やパッケージのインストールなどをすれば以下の環境で動作することを確認しています.</p>
+<h4 id="動作確認">動作確認</h4>
+<ul>
+<li>macOS Monterey 12.4</li>
+<li>Windows 10</li>
+<li>Windows 11</li>
+<li>Unity 2021.3.0f1</li>
+<li>Unity 2021.3.1f1</li>
+<li>Unity 2021.3.3f1</li>
+</ul>
+<h2 id="基本ルール">基本ルール</h2>
+<ul>
+<li>車2台での対戦を行います(3台以上の対戦は行いません)。</li>
+<li>先に一周した方の勝ちとなります。</li>
+<li>壁や障害物に接触するとゲームオーバーになります。</li>
+<li>どちらも1周することなくゲームオーバーになった場合はより多くの距離を進んだ方の勝ちとなります。</li>
+<li>対戦中に取得可能な情報は<a href="#%E5%85%A5%E5%8A%9B%E5%A4%89%E6%95%B0%E3%81%AE%E4%BB%95%E6%A7%98">入力変数の仕様</a>に記す46次元の情報のみです。</li>
+</ul>
+<h2 id="unity-editor上での操作説明">Unity Editor上での操作説明</h2>
+<h3 id="sceneの実行">Sceneの実行</h3>
+<p>ProjectタブのAssets &gt; Scenesから選択したいシーンをダブルクリックして開きます.</p>
+<img src="file:///d:\Documents\github-repos\self-driving-competition\Pictures\Screen Shot 2022-10-19 at 13.11.45.png" alt="unityinterface" width="250"/>
+<p>Battleフォルダには対戦用のScene、NEとQにはそれぞれニューロ進化とQ学習用の学習環境が入っています。Challengeとついているものは障害物ありの環境です。
+画面上部の再生ボタンを押すと対戦/学習が始まります. NE/Qの学習の場合はGame画面に表示されるスライダでプログラムの実行速度を調整できます. コンピュータへの負荷を少なくしたい場合は, 描画をオフにすることもできます。</p>
+<h2 id="チュートリアルaiの学習から対戦までの流れ">チュートリアル：AIの学習から対戦までの流れ</h2>
+<p>とりあえず，配布プログラムに用意されているニューロ進化の学習環境を使ってAIの学習を行い，対戦環境でテストドライブするまでの流れを体験してみましょう．</p>
+<h3 id="0-注意unityプロジェクトでのファイルの扱いについて">0. 注意：Unityプロジェクトでのファイルの扱いについて</h3>
+<p>Unityプロジェクト内のファイル（<code>Assets/</code>以下のフォルダ・ファイル）を移動したりする場合は，極力，<strong>Unityエディタ上</strong>（&quot;Project&quot;タブ）で行ってください．
+ファイルエクスプローラーなど，Unityエディタ外でファイル操作を行う場合は，<code>(ファイル名).meta</code>も同時に移動させてください．</p>
+<p>Unityでは，ファイルの識別をファイルのパスや名前ではなく，<code>.meta</code>ファイルに保存される<code>guid</code>という識別子で行っています．<code>guid</code>が適切に管理されないと，シーン上での参照関係が崩れて面倒なことになるので注意してください．</p>
+<h3 id="1-aiの学習ニューロ進化">1. AIの学習（ニューロ進化）</h3>
+<p>配布プログラムに用意されているニューロ進化の学習環境を使ってAIの学習を行います．ニューロ進化のアルゴリズムなどの説明は教科書などを参照してください．</p>
+<p>まずは，学習環境のシーンを開きます．ニューロ進化の学習環境は，<code>Assets/Scenes/NE/</code>や<code>Assets/Scenes/NE_Challenge/</code>にあります．好きなものを1つ選んで，開いてみましょう．
+Unityエディタの&quot;Hierarchy&quot;タブから<code>Environment</code>というオブジェクトを選択すると，&quot;Inspector&quot;タブからニューロ進化のパラメータを変更することができます．</p>
+<p>パラメータを設定したら，Unityエディタ上部中央の再生ボタンを押してシーンを実行してみましょう．ある程度，車が走れるようになったら，シーンの実行を終了して，学習結果が保存されていることを確認してみましょう．学習結果は，<code>Assets/LearningData/NE/{シーンの名前}.json</code>に保存されます．（Unityエディタ上では拡張子<code>.json</code>は省略されます．）このファイルには，ニューロ進化で得られたニューラルネットワークの重みなどの情報が保存されています．</p>
+<p>もし，Unityエディタ上で学習結果のファイルが確認できない場合は，&quot;Project&quot;タブで右クリック→Refreshとするか，1世代以上学習させてみてください．また，シーンをもう一度実行すると前の学習結果が上書きされてしまうので，保存しておきたい場合は別名保存してください．</p>
+<h3 id="2-対戦の準備">2. 対戦の準備</h3>
+<p>学習させたAI（ニューラルネット）を対戦環境で実行するための準備をします．</p>
+<p>まずは，対戦に必要なものをまとめるフォルダ（例：<code>Assets/(自分の苗字)_NE/</code>）を作成します．（&quot;Project&quot;タブで右クリック→Create→Folder）
+そのフォルダの中で，右クリック→Create→BattleBrain→NNBattleBrainと押して，対戦用のAIのアセットを作成します．名前は，<code>(自分の苗字)BattleBrain.asset</code>としてください．（拡張子<code>.asset</code>はUnityエディタ上では省略されます．）
+そして，同じフォルダの中に，1.で得られたデータファイル（<code>*.json</code>）を移動，または，コピー＆ペーストします．
+最後に，作成した<code>(自分の苗字)BattleBrain.asset</code>を選択して，&quot;Inspector&quot;タブで，<code>Name</code>に自分の名前を入力，<code>Brain Data</code>に先ほどのデータファイル<code>*.json</code>をドラッグ＆ドロップして使用するニューラルネットの情報を登録します．
+これで，対戦用AIの準備は完了です．</p>
+<p><img src="https://user-images.githubusercontent.com/82144808/198334728-cd4b2415-baef-496d-a784-6d867b46e638.png" alt="image"></p>
+<h3 id="3-対戦環境でテストドライブ">3. 対戦環境でテストドライブ</h3>
+<p>2.で用意した対戦用AIを実際に対戦環境で走らせてみます．<code>Assets/Scenes/Battle/</code>から好きなコースを選んで，シーンを開きます．</p>
+<p>&quot;Hierarchy&quot;タブで<code>AgentExecutor</code>というオブジェクトを探して選択し，&quot;Inspector&quot;タブ→AgentExecutor→Agents→Element0/1→Brainに，2.で作成した<code>(自分の苗字)BattleBrain.asset</code>をドラッグ＆ドロップで設定します．（右にある丸から選択することもできます．）
+<br>
+<img src="https://user-images.githubusercontent.com/82144808/198338487-273d0faa-732d-4d8e-ae89-d63e27f2b922.png" alt="image"></p>
+<p>セットしたらUnityエディタ上部中央の再生ボタンを押してシーンを実行してみましょう．2台の車が競争するところを観察できます．</p>
+<h3 id="4-対戦用ファイルの提出">4. 対戦用ファイルの提出</h3>
+<p>最終日の対戦は，TAのPCで実行します．そのため，実行に必要なデータをまとめて提出してもらう必要があります．
+このチュートリアルの場合は，2.で作成したフォルダ（<code>Assets/(自分の苗字)_NE/</code>）を丸ごと提出していただければ大丈夫です．
+（提出する際に<code>.meta</code>ファイルも含まれていることを確認してください．）</p>
+<h2 id="対戦環境と同じセンサを使って学習させる方法">対戦環境と同じセンサを使って学習させる方法</h2>
+<p>既存のNE/NE_challenge/QのSceneでは、学習に用いている車のオブジェクトが対戦で用いているものと違うため、限られたセンサ情報しか取得できません。
+ここでは、学習環境を対応させる方法を説明します。</p>
+<ol>
+<li>
+<p>対戦用のStage1をシーンとして開き、その中のset1/BattleCar_Blueをコピーします。(選択してctrl-cでコピー可能)
+<img width="278" alt="image" src="https://user-images.githubusercontent.com/49557322/199195141-73c8b8bb-adfa-4532-9502-748177437d91.png"></p>
+</li>
+<li>
+<p>対応させたい学習環境を開き、コピーしたものをペーストします。ここではNEのChallenge1を例に取ります。(ctrl-vでペースト可能)
+<img width="261" alt="image" src="https://user-images.githubusercontent.com/49557322/199202703-f4132cf2-eb39-406c-b8e3-7ec951d2fae3.png"></p>
+</li>
+<li>
+<p>BattleCar_Blueをクリックし、右側のインスペクタのLayerの部分をPlayerに変えます。<br>
+<strong>注意</strong>：この時、子オブジェクトのLayerも変更するか聞かれますが、&quot;Yes&quot;にして子オブジェクトのLayerも変更して下さい。</p>
+</li>
+</ol>
+<img width="334" alt="image" src="https://user-images.githubusercontent.com/49557322/199197987-a3a7e608-d9b5-4ef1-8c8c-7c936ae1cc4a.png">
+<ol start="4">
+<li>BattleCar_Blue-&gt;Sensors-&gt;Sensors_0_Playerをクリックし、インスペクタからLayerNameをPlayerにします。これは、センサが認識する車のレイヤを変える処理です。
+Sensors_1/2/3_Playerに関しても同様にします。
+<img width="333" alt="image" src="https://user-images.githubusercontent.com/49557322/199201317-fbc71c61-d6c4-40a1-85aa-66691978c382.png"></li>
+</ol>
+<p>レイヤを変える前と後で、車が認識されるようになっているのがわかるかと思います。(赤いレイは車を感知していることを示している。)<br>
+変更前<br>
+<img width="527" alt="image" src="https://user-images.githubusercontent.com/49557322/199201943-dbada362-8f9e-44a9-a119-ca3a24c1edda.png"><br>
+変更後<br>
+<img width="662" alt="image" src="https://user-images.githubusercontent.com/49557322/199201610-0416ed37-099e-4bf9-a29a-5b5c4da2991d.png"></p>
+<ol start="5">
+<li>BattleCar_BuleのPositionをコースごとのスタートの位置に変えます。スタートの位置はCar@Blueと同じ位置、角度にしてあげれば大丈夫です。
+<img width="331" alt="image" src="https://user-images.githubusercontent.com/49557322/199203179-8f589325-33f7-4c0d-b316-c6e82ea64be6.png"></li>
+</ol>
+<p>6.Environmentオブジェクトをクリックし、インスペクタからNE EnvironmentのInput Sizeを46に変更し、Agent PrefabにBattleCar_BlueをHierarchyからドラッグアンドドロップで設定します。<br>
+<img width="336" alt="image" src="https://user-images.githubusercontent.com/49557322/199203411-5160fb42-05a2-4227-b631-9cba4c582538.png"></p>
+<p>7.NEEnvironment.csのAgentUpdate関数内で、CollectObservations関数を用いていたのをGetAllObservations関数に変えてあげます。<br>
+<img width="388" alt="image" src="https://user-images.githubusercontent.com/49557322/199203781-2f4f2caa-a633-4717-9557-25daf674d15c.png"></p>
+<ol start="8">
+<li>シーンを実行します。</li>
+</ol>
+<h3 id="入力変数observationの一部だけ使用して学習する方法">入力変数（observation）の一部だけ使用して学習する方法</h3>
+<p><code>NEEnvironment.cs</code>を以下のように書き換える．
+下の例では，前方の対壁センサー5つ（0～4）と車のx, z速度（40, 42）を取り出しています．</p>
+<pre><code class="language-cs">    <span class="hljs-function"><span class="hljs-keyword">private</span> <span class="hljs-keyword">void</span> <span class="hljs-title">AgentUpdate</span>(<span class="hljs-params">Agent a, NNBrain b</span>)</span> {
+        <span class="hljs-keyword">var</span> observation = a.CollectObservations();
+        <span class="hljs-keyword">var</span> rearranged = RearrangeObservation(observation, <span class="hljs-keyword">new</span> List&lt;<span class="hljs-built_in">int</span>&gt;(){<span class="hljs-number">0</span>, <span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>, <span class="hljs-number">4</span>, <span class="hljs-number">40</span>, <span class="hljs-number">42</span>});
+        <span class="hljs-keyword">var</span> action = b.GetAction(rearranged);
+        a.AgentAction(action);
+    }
+
+    <span class="hljs-comment">// BattleBrain.cs にあるのをコピペ</span>
+    <span class="hljs-function"><span class="hljs-keyword">protected</span> List&lt;<span class="hljs-built_in">double</span>&gt; <span class="hljs-title">RearrangeObservation</span>(<span class="hljs-params">List&lt;<span class="hljs-built_in">double</span>&gt; observation, List&lt;<span class="hljs-built_in">int</span>&gt; indexesToUse</span>)</span>
+    {
+        <span class="hljs-keyword">if</span>(observation == <span class="hljs-literal">null</span> || indexesToUse == <span class="hljs-literal">null</span>) <span class="hljs-keyword">return</span> <span class="hljs-literal">null</span>;
+
+        List&lt;<span class="hljs-built_in">double</span>&gt; rearranged = <span class="hljs-keyword">new</span> List&lt;<span class="hljs-built_in">double</span>&gt;();
+        <span class="hljs-keyword">foreach</span>(<span class="hljs-built_in">int</span> index <span class="hljs-keyword">in</span> indexesToUse)
+        {
+            <span class="hljs-keyword">if</span>(index &gt;= observation.Count)
+            {
+                rearranged.Add(<span class="hljs-number">0</span>);
+                <span class="hljs-keyword">continue</span>;
+            }
+            rearranged.Add(observation[index]);
+        }
+
+        <span class="hljs-keyword">return</span> rearranged;
+    }
+</code></pre>
+<p>その後，インスペクタからNE EnvironmentのInput Sizeを自分が使用する次元数（上の例なら7）に設定する必要があります．</p>
+<p>対戦環境で走らせるためのBattleBrainは，以下のようにして作成できます．</p>
+<pre><code class="language-cs"><span class="hljs-keyword">using</span> System.Collections.Generic;
+<span class="hljs-keyword">using</span> UnityEngine;
+
+[<span class="hljs-meta">CreateAssetMenu(menuName = <span class="hljs-string">&quot;BattleBrain/YourNameBattleBrain&quot;</span>)</span>]
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title">YourNameBattleBrain</span> : <span class="hljs-title">NNBattleBrain</span>
+{
+    <span class="hljs-function"><span class="hljs-keyword">protected</span> <span class="hljs-keyword">override</span> <span class="hljs-title">List</span>&lt;<span class="hljs-title">double</span>&gt; <span class="hljs-title">ProcessObservation</span>(<span class="hljs-params">List&lt;<span class="hljs-built_in">double</span>&gt; observation</span>)</span>
+    {
+        <span class="hljs-keyword">return</span> RearrangeObservation(observation, <span class="hljs-keyword">new</span> List&lt;<span class="hljs-built_in">int</span>&gt;(){<span class="hljs-number">0</span>, <span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>, <span class="hljs-number">4</span>, <span class="hljs-number">40</span>, <span class="hljs-number">42</span>});
+    }
+}
+</code></pre>
+<h3 id="センサーの角度を変更する方法">センサーの角度を変更する方法</h3>
+<p>Unityエディタ上でBattleCar_Blueの子オブジェクトのセンサーを選んでインスペクターから角度を設定するのでも良いですが，
+以下のようにするとスクリプトからもセンサーの角度を変更できます．</p>
+<p><code>NEEnvrionment.cs</code>の<code>Start</code>関数の最後に以下を追加．何番目の要素がどのセンサーに対応するかは，<a href="#%E5%85%A5%E5%8A%9B%E5%A4%89%E6%95%B0%E3%81%AE%E4%BB%95%E6%A7%98">入力変数の仕様</a>を参照してください．
+対戦環境で走らせるためのBattleBrainでの設定方法もそちらを参照してください．</p>
+<pre><code class="language-cs">List&lt;<span class="hljs-built_in">double</span>&gt; sensorAngles = <span class="hljs-keyword">new</span> List&lt;<span class="hljs-built_in">double</span>&gt;(){
+    <span class="hljs-number">50</span>, <span class="hljs-number">70</span>, <span class="hljs-number">90</span>, <span class="hljs-number">110</span>, <span class="hljs-number">130</span>,
+    <span class="hljs-number">50</span>, <span class="hljs-number">70</span>, <span class="hljs-number">90</span>, <span class="hljs-number">110</span>, <span class="hljs-number">130</span>,
+    <span class="hljs-number">50</span>, <span class="hljs-number">70</span>, <span class="hljs-number">90</span>, <span class="hljs-number">110</span>, <span class="hljs-number">130</span>,
+    <span class="hljs-number">50</span>, <span class="hljs-number">70</span>, <span class="hljs-number">90</span>, <span class="hljs-number">110</span>, <span class="hljs-number">130</span>,
+    <span class="hljs-number">50</span>, <span class="hljs-number">70</span>, <span class="hljs-number">90</span>, <span class="hljs-number">110</span>, <span class="hljs-number">130</span>,
+    <span class="hljs-number">50</span>, <span class="hljs-number">70</span>, <span class="hljs-number">90</span>, <span class="hljs-number">110</span>, <span class="hljs-number">130</span>,
+    <span class="hljs-number">50</span>, <span class="hljs-number">70</span>, <span class="hljs-number">90</span>, <span class="hljs-number">110</span>, <span class="hljs-number">130</span>,
+    <span class="hljs-number">50</span>, <span class="hljs-number">70</span>, <span class="hljs-number">90</span>, <span class="hljs-number">110</span>, <span class="hljs-number">130</span>
+};
+<span class="hljs-keyword">foreach</span>(Agent agent <span class="hljs-keyword">in</span> Agents)
+{
+    agent.SetAgentConfig(sensorAngles);
+}
+</code></pre>
+<h2 id="今回のai開発の基本的な流れ">今回のAI開発の基本的な流れ</h2>
+<ol>
+<li>AIの設計を考える。(必要に応じて学習などを行い、modelを保存したりする)</li>
+<li>(自分の苗字小文字)BattleBrain.csのGetAction関数に、上で考えたAIによる処理を含むコードを実装する。</li>
+<li>Assets→Create→BattleBrain→YourNameBattleBrainをクリックし、自分のAIのassetを作成する。これを(自分の苗字小文字)BattleBrain.assetとする。</li>
+<li>Scenes/Battle/にある対戦用のシーンを開いて，(自分の苗字小文字)BattleBrain.aseetをAgentExecutorのInspector→Agents→Element0/1→Brainにセットする。</li>
+<li>Unityの再生ボタンをクリックし、AIの挙動を確認する。<br>
+なお、(自分の苗字小文字)BattleBrain.csを変更すると自動的にassetの方にも反映されるので、assetを何回も作り直す必要はありません。（Inspectorで変更できる変数は，場合によっては反映されないので注意．）</li>
+</ol>
+<h2 id="コード解説">コード解説</h2>
+<ul>
+<li><code>AI/Battle/(自分の苗字小文字)BattleBrain.cs</code><br>
+自動運転を実現するクラスを実装したコードで、今回の中核となるコードです。最初の時点では存在しないファイルなので、(自分の苗字小文字)BattleBrainという名前のファイルを最初に作ってください。提出の際に誰のファイルかを識別するために<strong>非常に重要になります</strong>。 <br>
+このクラスを作る上で、<strong>必ずBattleBrainクラスを継承してください。</strong>
+GetAction関数が入力変数observationを受け取り、出力変数であるactionを返します。\<pre><code>[CreateAssetMenu(menuName = &quot;BattleBrain/YourNameBattleBrain&quot;)]
+public class YourNameBattleBrain : BattleBrain
+{
+  public override double[] GetAction(List&lt;double&gt; observation) { }
+}
+</code></pre>
+</li>
+<li><code>AI/AgentExecutor.cs</code><br>
+2台の対戦に使うコードです。最終回の対戦会もこのコードを用いて行います。開発時には主に作ったAIの性能をテストする目的で使ってもらうことになると思います。
+このコードを使用する上で、基本的にコードそのものをいじる必要はありません。Inspector→Agents→Element0/1→Brainに自分が作ったAIのassetをセットしてもらうことで車を動かすことができます。</li>
+<li><code>AI/NNBattleBrain.cs</code><br>
+ニューロ進化を用いた対戦用のAIを実装したコードです。学習済みのニューラルネットの重みをファイルから読み込んでいます。</li>
+<li><code>AI/QBattleBrain.cs</code><br>
+Q学習を用いた対戦用のAIを実装したコードです。学習済みのQテーブルをファイルから読み込んでいます。</li>
+<li><code>AI/Battle/BattleBrain.cs</code><br>
+今回の自動運転で作ってもらうXBrainクラスの継承元です。基本的にこのコードをいじる必要はありません。</li>
+<li><code>AI/NEEnvironment.cs</code><br>
+ニューロ進化の学習を行うためのコードです。学習によって更新されたニューラルネットの重みをファイルに保存します。</li>
+<li><code>Car/CarAgent.cs</code><br>
+車をスタート地点にセットし, Brainにセンサーなど環境の値を渡します. Brainからの指示が来るのでそれに従って車を運転します. 衝突を検知すると報酬値を返し, 車をリセットします.</li>
+<li><code>Car/CarController.cs</code><br>
+車の入力に対する動作が記述してあります (例： <code>steering</code>の値を受け取りタイヤを回転させる)<br>
+教科書(Unityシミュレーションで学ぶ人工知能と人工生命)の2, 3章にサンプルコードが何をしているかがわかりやすく書いてあるので, 詳しくはそちらもご覧ください.</li>
+</ul>
+<h3 id="スクリプトの編集について">スクリプトの編集について</h3>
+<p>配布しているスクリプトを編集したい場合は，スクリプトを複製（Unityエディタ上で選択して<code>Ctrl+D</code>）して，ファイル名・クラス名を変更してから編集することを推奨します．</p>
+<p>最終日の対戦会では，基本的に，配布プログラムを配布している状態で実行します．（軽微な変更はあるかもしれません．）そのため，既存スクリプトに変更を加えても，本番の環境には反映されないので注意してください．皆さんが新しく作成したり編集したりしたスクリプトで，対戦時に必要なものは，対戦会前に提出してもらうことになりますが，本番環境のプログラムと競合するため，既存スクリプトと同名クラスのものは提出しないでください．</p>
+<h2 id="入力変数の仕様">入力変数の仕様</h2>
+<p>入力変数はXBattleBrainのGetAction関数の引数として渡されます。内容は以下のような長さ46のリスト</p>
+<table>
+<thead>
+<tr>
+<th>インデックス</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0--4</td>
+<td>前方の対壁センサー（Sensors_0_Wall）</td>
+</tr>
+<tr>
+<td>5--9</td>
+<td>右方の対壁センサー（Sensors_1_Wall）</td>
+</tr>
+<tr>
+<td>10--14</td>
+<td>左方の対壁センサー（Sensors_2_Wall）</td>
+</tr>
+<tr>
+<td>15--19</td>
+<td>後方の対壁センサー（Sensors_3_Wall）</td>
+</tr>
+<tr>
+<td>20--24</td>
+<td>前方の対車センサー（Sensors_0_Player）</td>
+</tr>
+<tr>
+<td>25--29</td>
+<td>前方の対車センサー（Sensors_1_Player）</td>
+</tr>
+<tr>
+<td>30--34</td>
+<td>前方の対車センサー（Sensors_2_Player）</td>
+</tr>
+<tr>
+<td>35--39</td>
+<td>前方の対車センサー（Sensors_3_Player）</td>
+</tr>
+<tr>
+<td>---</td>
+<td>---</td>
+</tr>
+<tr>
+<td>40--42</td>
+<td>自車のローカル速度</td>
+</tr>
+<tr>
+<td>---</td>
+<td>---</td>
+</tr>
+<tr>
+<td>43--45</td>
+<td>コース上の前方向ベクトル（次のWaypointの方向）</td>
+</tr>
+<tr>
+<td>---</td>
+<td>---</td>
+</tr>
+</tbody>
+</table>
+<p>となっています。</p>
+<h3 id="センサー角度の設定の仕方">センサー角度の設定の仕方</h3>
+<p>センサーの角度は調整することができる。以下仕様。<br>
+<code>BattleBrain.Initialize()</code>の中などで<code>ObservationConfig</code>に長さ40の<code>List&lt;double&gt;</code>を設定する。
+<code>observation</code>のセンサーと同じ順番。
+長さが40に満たない場合，足りない部分はデフォルトのセンサー角度のまま。
+長さが40を超える分は無視される。デフォルトでは以下のような設定になっている。</p>
+<p><img src="https://user-images.githubusercontent.com/49557322/196894923-168386eb-ae66-4fe9-a22a-06adb97de57d.png" alt="image"></p>
+<h4 id="センサー角度を指定する例">センサー角度を指定する例</h4>
+<p>以下のような<code>Initialize</code>関数を書くことで，前方の対壁センサーの角度を<code>[0，45, 90, 135, 180]</code>度に，右方の対壁センサーの角度を<code>[90, 110, 130, 150, 170]</code>度に，設定できる．（それ以外はデフォルトのまま．）</p>
+<pre><code>public override void Initialize() {
+  base.Initialize();
+  ObservationConfig = new List&lt;double&gt;(){
+    0, 45, 90, 135, 180,
+    90, 110, 130, 150, 170
+  };
+}
+</code></pre>
+<p>自分が作成した<code>BattleBrain</code>のアセットのInspectorタブから変更することも可能．
+<br>
+<img src="file:///d:\Documents\github-repos\self-driving-competition\Pictures\ObservationConfig.png" alt="ObservaionConfig"></p>
+<h3 id="次のwaypointの方向に関する注意点">次のWaypointの方向に関する注意点</h3>
+<p>次のWaypointの方向に関する情報は<code>Waypoints/Waypoint.cs</code>の<code>NextDirection</code>変数に保存されているが、これは既にWaypointが配置されているシーンでは，<code>Waypoint.NextDirection</code>は自動的には計算されない。手動で<code>Set Next Direction</code>を押して設定するか<code>Set</code>し直す必要がある．</p>
+<p><img src="https://user-images.githubusercontent.com/82144808/196850035-b623b7a9-68c4-4128-8abd-70b28599b652.png" alt="waypoint-set-next-direction"></p>
+<p>色んな工夫を可能にするために多くのデータを取っていますが、必ずしも全てを使う必要はありません(むしろ、考えなしに全ての変数を使うと多すぎると思います)。試行錯誤しながらどの変数を使うかを決めてください。</p>
+<h2 id="出力変数の仕様">出力変数の仕様</h2>
+<p>出力変数はXBattleBrainのGetAction関数の返り値として渡されます。長さ3のdouble arrayで、順番に</p>
+<ul>
+<li>SteetInput(ハンドル)：[-1, 1]</li>
+<li>GasInput(アクセル)：[0, 1]</li>
+<li>BrakeInput(ブレーキ)：[0, 1]<br>
+の値を返す必要があります。</li>
+</ul>
+<h2 id="対戦会で提出するファイル">対戦会で提出するファイル</h2>
+<p>自分で実装したコードが動くために必要なファイルを1つのフォルダにまとめて，指定の方法で提出してください．
+<strong>注意</strong>：配布プログラムに含まれるファイルは提出しないでください．</p>
+<ul>
+<li>(自分の苗字小文字)BattleBrain.cs <br>
+自動運転を実現するクラスを実装したコードです。<code>NNBattleBrain.cs</code>など既存のクラスを使用する場合は提出しなくて大丈夫です．</li>
+<li>(自分の苗字小文字)BattleBrain.csに依存するクラスのファイル
+(自分の苗字小文字)BattleBrain.csでオリジナルのクラスを呼び出している場合は、そのファイルも提出をお願いします。</li>
+<li>(自分の苗字小文字)BattleBrain.asset<br>
+上のBrainをasset化したものです。<a href="#%E4%BB%8A%E5%9B%9E%E3%81%AEAI%E9%96%8B%E7%99%BA%E3%81%AE%E5%9F%BA%E6%9C%AC%E7%9A%84%E3%81%AA%E6%B5%81%E3%82%8C">今回のAI開発の基本的な流れ</a>で説明した方法によって作られるものです。（エディタ上では拡張子<code>.asset</code>は省略されていますが，下のようなアイコンのファイルです．）<br>
+<img src="file:///d:\Documents\github-repos\self-driving-competition\Pictures\BattleBrain_icon.png" alt="BattleBrainAssetIcon"></li>
+<li>(自分の苗字小文字)data.(json,pth,txtなど任意の拡張子)<br>
+(自分の苗字小文字)BattleBrainで用いるデータファイルです。ニューロ進化におけるNNの重みやQ学習におけるQテーブルがこれに相当します。</li>
+<li>上記のファイルのmetaファイル<br>
+metaファイルはそれぞれのファイルと同フォルダ内に自動生成されるファイルです。</li>
+</ul>
+<h2 id="最終回の対戦会について">最終回の対戦会について</h2>
+<p>第10回目の演習で各々が作ったプログラム同士の対戦会をします。仕様は</p>
+<ul>
+<li>各対戦は1対1の対決</li>
+<li>トーナメント方式(変更の可能性あり)</li>
+<li>コースは<a href="#Challenge%E7%92%B0%E5%A2%83%E3%81%AB%E3%81%A4%E3%81%84%E3%81%A6">Challenge環境について</a>にあるChallenge1をベースにしたものを用いる(ただし岩の位置は変わる可能性がある)<br>
+という感じになっています。もしここに書かれていない仕様について気になる人はTAに聞いてみてください。</li>
+</ul>
+<h2 id="challenge環境について">Challenge環境について</h2>
+<p>デフォルトで用意されている学習環境の中に、コース上の岩を避ける課題が用意されています. 最終回の対戦会でも岩のある環境を用いる予定ですので、Challenge環境を適宜活用してみてください。 シーンファイルは以下にあります. 各シーンを開き再生を押すとニューロ進化による学習が始まります. <br>
+<code>/Assets/Scenes/NE_Challenge/Challenge*.unity</code></p>
+<h3 id="challenge-1">Challenge 1</h3>
+<p>コース上に数個の岩が設置されるのでその岩に当たらずにコースを一周できるように進化・学習させる(岩の位置は固定)</p>
+<h3 id="challenge-2">Challenge 2</h3>
+<p>Challenge1と同じくコース上に数個の岩が設置されるのでその岩に当たらずにコースを一周できるように進化・学習させる(岩の位置は固定ではなくランダム)</p>
+<h3 id="challenge-3">Challenge 3</h3>
+<p>坂の上から岩が転がり落ちてくるのでその岩に当たらずにコースを一周できるように進化・学習させる</p>
+<h3 id="challenge-4">Challenge 4</h3>
+<p>コース上に一定間隔で岩が置かれていて近づくと転がり落ちてくる. 岩の大きさや速度はランダム</p>
+<hr>
+<h2 id="python連携について">Python連携について</h2>
+<p>Pythonを使うと, Numpyなどの数値計算モジュールやTensorflow, PyTorchなどの機械学習モジュールを用いることができます. 詳しくは教科書等を参考にしてください.</p>
+<h3 id="準備">準備</h3>
+<p>必要なパッケージがダウンロードされていない場合は<code>pip</code>などで適宜ダウンロードしてください.</p>
+<pre><code class="language-shell"><span class="hljs-meta prompt_">$ </span><span class="language-bash">pip install numpy</span>
+<span class="hljs-meta prompt_">$ </span><span class="language-bash">pip install asyncio</span>
+<span class="hljs-meta prompt_">$ </span><span class="language-bash">pip install asyncio-dgram</span>
+<span class="hljs-meta prompt_">$ </span><span class="language-bash">pip install torch</span>
+</code></pre>
+<h3 id="使い方">使い方</h3>
+<ol>
+<li>ターミナルで<code>/env/src/PyNECommunicator.py</code>を実行している状態にします</li>
+</ol>
+<pre><code class="language-shell"><span class="hljs-meta prompt_">$ </span><span class="language-bash">python /env/src/PyNECommunicator.py</span>
+</code></pre>
+<ol start="2">
+<li><code>/Asset/Scenes/PythonNE/</code>下のシーンファイルをUnityから実行します</li>
+</ol>
+<p>現在<code>/env/src/PyNNBrain.py</code>は<code>NNBrain.cs</code>をPytorchに翻訳したものですが, Pythonで新しいニューラルネットワークの構造なども定義することができます.</p>
+<h3 id="sceneをpython対応させるには">SceneをPython対応させるには</h3>
+<p>通常のシーン(Challengeなど)をPythonに対応したシーンにするには以下の変更が必要です. 詳しくは既にPython対応しているシーンを参照して下さい.</p>
+<ul>
+<li>EventSystemの追加<br>
+ユーザーからの入力を受け取るものです. 今回はPythonからの入力を受け取っています. Python対応済みのシーンからのコピーで問題ないはずです.</li>
+<li>Environmentを<code>PyNEEnvironment.cs</code>にする<br>
+<code>NEEnvironment.cs</code>を<code>PyNEEnvironment.cs</code>にします. また, Agent Prefabを<code>Car@Blue</code>に設定します.</li>
+</ul>
+<h2 id="対戦でpython連携を用いる方法">対戦でPython連携を用いる方法</h2>
+<p>対戦でpython連携を用いるためのコードのベースが<code>AI/PyNEBattleBrain.cs</code>に実装されています。</p>
+<h3 id="使い方">使い方</h3>
+<ol>
+<li>ターミナルで<code>/env/src/PyNECommunicator.py</code>を実行している状態にします</li>
+</ol>
+<pre><code class="language-shell"><span class="hljs-meta prompt_">$ </span><span class="language-bash">python /env/src/PyNECommunicator.py</span>
+</code></pre>
+<ol start="2">
+<li>バトル用のシーンを開き、AgentExecutorにPyNECommunicator.csのアセットをセットします(デフォルトで`Assets/BattleBrains/PyNEBB.assetが用意されています)。</li>
+<li>シーンを実行します。</li>
+</ol>
+<p>Python側ではあらかじめモデルをトレーニングしておき、その重みを保存しておくことが必要です(デフォルトでmodel_weight.pthが用意されています)。</p>
+<h3 id="python連携を用いたbattlebrainを作る場合">Python連携を用いたBattleBrainを作る場合</h3>
+<p>重要なこととして、Python連携を用いたBattleBrainを作る場合は、既存のPyNEBattleBrain.csを変更するのではなく、<strong>新しく(自分の苗字小文字)BattleBrain.csを作成</strong>して、<code>PyNEBattleBrain</code>を継承するか内容をコピペするかして、その上で編集してください。最終回の対戦会でファイル間の識別をスムーズに行うために重要になります。</p>
+
+        <script async src="https://cdn.jsdelivr.net/npm/katex-copytex@latest/dist/katex-copytex.min.js"></script>
+        
+    </body>
+    </html>

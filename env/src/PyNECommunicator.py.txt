@@ -1,0 +1,130 @@
+import asyncio
+import asyncio_dgram
+from parallel_udp.parallel_udp_async import ParallelUDPServerAsync
+from PyNNBrain import PyNNBrain
+import random
+import torch
+import copy
+import numpy as np
+
+#学習するNNの集団
+Brains = []
+
+#各NNが評価前か評価後かを判別するためのフラグ
+waitFlag = []
+
+def receive(message):
+    #C#側のClientに送る文字列の初期化
+    action_txt = ""
+    generation_txt = ""
+    lost_text = ""
+
+    #受け取った文字列の前処理
+    received_obj = message.split(",")
+
+    #C#からの指示内容の取得
+    unityOrder = received_obj[0]
+
+    #最初の世代を作る
+    if (unityOrder == "GenerateFirstPop"):
+        if (len(Brains) != 0):
+            Brains.clear()
+        #集団の大きさ,NNのパラメータを取得
+        TotalPopulation = int(received_obj[1])
+        inputSize = int(received_obj[2])
+        hiddenSize = int(received_obj[3])
+        hiddenLayers = int(received_obj[4])
+        outputSize = int(received_obj[5])
+        #世代を作る
+        for i in range(TotalPopulation):
+            Brains.append(PyNNBrain(inputSize, hiddenSize, hiddenLayers, outputSize))
+            waitFlag.append(1)
+        print("Generate First Population")
+    
+    #世代交代
+    elif (unityOrder == "GenerateNextPop") :
+        #世代更新のためのパラメータを取得
+        current_generation = int(received_obj[1])
+        elite_selection = int(received_obj[2])
+        tournament_selection = int(received_obj[3])
+        #成績の良い順に並べ替え
+        Brains.sort(reverse=True)
+        for id,b in enumerate(Brains):
+            print(id, b.Reward)
+        #エリートを次世代にコピー
+        NextBrains = copy.deepcopy(Brains[:elite_selection])
+        #トーナメントによる淘汰と突然変異による次世代の生成
+        while (len(NextBrains) < len(Brains)):
+            TournamentMembers = random.sample(Brains, tournament_selection)
+            TournamentMembers.sort(reverse=True)
+            NextBrain = copy.deepcopy(TournamentMembers[0])
+            NextBrain.Mutate(current_generation)
+            NextBrains.append(NextBrain)
+            NextBrain = copy.deepcopy(TournamentMembers[1])
+            NextBrain.Mutate(current_generation)
+            NextBrains.append(NextBrain)
+
+        #世代交代とそれに伴う初期化
+        for i in range(len(Brains)):
+            Brains[i].load_state_dict(NextBrains[i].state_dict())
+            Brains[i].Reward = -9999
+            waitFlag[i] = 1 
+        print("Generate Next Population")
+
+    #現世代のすべての個体が評価済みかどうかをチェック
+    elif (unityOrder == "CheckFinishGeneration") :
+        if (sum(waitFlag) != 0) :
+            generation_text = "Wait"
+        else :
+            generation_txt = "GoNextGen"
+    
+    #評価の帰ってきていない個体のIDをC#に報告する
+    elif (unityOrder == "CheckLost") :
+        LostIDs = ""
+        for id, waiting in enumerate(waitFlag):
+            if (waiting) :
+                LostIDs += str(id)
+                if (id != len(waitFlag) - 1) :
+                    LostIDs += ","
+        lost_text = LostIDs
+    
+    #C#側から個体に関する評価を取得、対応するNNに紐付ける
+    elif (unityOrder == "SetReward"):
+        brainID = int(received_obj[1])
+        Brains[brainID].Reward = float(received_obj[2])
+        #評価済みであることを反映
+        waitFlag[brainID] = 0
+    
+    #C#側から与えられた状態を元に次の行動を出力
+    elif (unityOrder == "GetAction"):
+        observation_size = Brains[0].inputSize
+        agentInfo_size = observation_size + 1
+        for agentNum in range(int((len(received_obj)-1) / (agentInfo_size))):
+            reading_position = agentNum * (agentInfo_size)
+            #何番目のエージェントか
+            brainID = int(received_obj[1 + reading_position])
+            observations = []
+            #そのエージェントの状態を取得
+            for i in range(observation_size):
+                observations.append(float(received_obj[i + 2 + reading_position]))
+            observations = torch.Tensor(observations)
+            #NNに行動を計算させる
+            actions = Brains[brainID](observations)
+            #
+            action_txt += " " + str(brainID) + " " + str(actions.detach().numpy())
+            action_txt = action_txt.replace("[","").replace("]","")
+            while ("  " in action_txt) :
+                action_txt = action_txt.replace("  ", " ")
+    else :
+        print("Undefined Order From Unity C# Script!?",unityOrder)
+
+    return action_txt, generation_txt, lost_text
+
+def main():
+    #Unityとの通信設定
+    server = ParallelUDPServerAsync('127.0.0.1', 50007, 50008, 50009, 50010, 50011)
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(server.read(receive))
+
+if __name__ == "__main__":
+    main()
