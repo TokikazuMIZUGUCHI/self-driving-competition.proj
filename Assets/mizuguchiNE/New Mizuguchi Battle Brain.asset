@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aec222f515719d54ea363a290b30a3b2, type: 3}
+  m_Name: New Mizuguchi Battle Brain
+  m_EditorClassIdentifier: 
+  Name: Player 1
+  ObservationConfig: []
+  brainData: {fileID: 4900000, guid: d11628cba9f86d34994a3db777578d38, type: 3}
+  usesAllObservations: 1

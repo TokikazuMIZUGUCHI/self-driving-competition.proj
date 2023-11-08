@@ -69,6 +69,20 @@ public class NEEnvironment : Environment
         }
         BestRecord = -9999;
         SetStartAgents();
+        List<double> sensorAngles = new List<double>(){
+            50, 70, 90, 110, 130,
+            50, 70, 90, 110, 130,
+            50, 70, 90, 110, 130,
+            50, 70, 90, 110, 130,
+            50, 70, 90, 110, 130,
+            50, 70, 90, 110, 130,
+            50, 70, 90, 110, 130,
+            50, 70, 90, 110, 130
+        };
+        foreach(Agent agent in Agents)
+        {
+            agent.SetAgentConfig(sensorAngles);
+        }
     }
 
     void SetStartAgents() {
@@ -110,9 +124,32 @@ public class NEEnvironment : Environment
     }
 
     private void AgentUpdate(Agent a, NNBrain b) {
+        // var observation = a.GetAllObservations();
+        // var action = b.GetAction(observation);
+        // a.AgentAction(action);
+
         var observation = a.CollectObservations();
-        var action = b.GetAction(observation);
+        var rearranged = RearrangeObservation(observation, new List<int>(){0, 2, 4, 5, 7, 9, 10, 12, 14, 20, 21, 22, 23, 24, 40, 42, 43, 44, 45});
+        var action = b.GetAction(rearranged);
         a.AgentAction(action);
+    }
+
+    protected List<double> RearrangeObservation(List<double> observation, List<int> indexesToUse)
+    {
+        if(observation == null || indexesToUse == null) return null;
+
+        List<double> rearranged = new List<double>();
+        foreach(int index in indexesToUse)
+        {
+            if(index >= observation.Count)
+            {
+                rearranged.Add(0);
+                continue;
+            }
+            rearranged.Add(observation[index]);
+        }
+
+        return rearranged;
     }
 
     private void SetNextAgents() {
